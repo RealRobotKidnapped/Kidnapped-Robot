@@ -240,7 +240,7 @@ while(n < maxNumOfIterations)
         end
     end
 
-    if((botScan(1,:) < 13) || (aflag == 1 && bflag == 2))
+    if((botScan(1,:) < 18) || (aflag == 1 && bflag == 2))
         bot.move(-14);
         bot.turn(-turn);
         for i =1:num %for all the particles.
