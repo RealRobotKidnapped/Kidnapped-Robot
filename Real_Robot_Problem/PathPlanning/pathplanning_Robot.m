@@ -9,10 +9,13 @@ modifiedMap = map;
 
 %% Plot the chosen path
 
-stPoint = [30 85];
-botAng = 0;
+stPoint = bot.getBotPos();
+botAng = bot.getBotAng();
 
-h = round(dims(1));
+disp(stPoint);
+disp(botAng);
+
+h = round(dims(1)*1.5);
 
 fprintf('Starting Point: %.3f, %.3f \n', stPoint);
 fprintf('Starting Angle: %.3f \n', botAng);

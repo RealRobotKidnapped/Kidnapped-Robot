@@ -17,6 +17,9 @@ tic % starts timer
 print = 'particle filtering';
 % returnedBot = localise(bot,map,target);
 returnedBot = DistanceCheck(bot,map,target);
+returnedBot.getBotPos()
+returnedBot.getBotAng()
+pathplanning_Robot(returnedBot,botSim,map,target)
 bot.complete();
 bot.delete();
 resultsTime = toc;

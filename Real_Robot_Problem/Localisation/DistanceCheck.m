@@ -1,4 +1,4 @@
-function [bot] = DistanceCheck(bot,map,target)
+function [Friend] = DistanceCheck(bot,map,target)
 
 scans = 9;
 turnBot = pi/5;
