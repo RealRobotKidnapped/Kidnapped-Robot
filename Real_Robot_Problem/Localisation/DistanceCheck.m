@@ -21,17 +21,28 @@ while(n < maxNumOfIterations)
     botScan
 
     scanflag = 0;
-    for i = 1:length(botScan)
-        if (botScan(i,:) < 5 || botScan(i,:) > 130)
+    while(scanflag == 1)
+        for i = 1:length(botScan)
+            if (botScan(i,:) < 5 || botScan(i,:) > 130)
             scanflag = 1;
-            break;
+            end
+        end
+        if(scanflag == 1)
+            botScan = bot.ultraScan(scans);
+            botScan
         end
     end
-    
-    if(scanflag == 1)  
-        botScan = bot.ultraScan(scans);
-        botScan
-    end
+%     for i = 1:length(botScan)
+%         if (botScan(i,:) < 5 || botScan(i,:) > 130)
+%             scanflag = 1;
+%             break;
+%         end
+%     end
+%     
+%     if(scanflag == 1)  
+%         botScan = bot.ultraScan(scans);
+%         botScan
+%     end
     
 %     figure(3)
 %         hold off; %the drawMap() function will clear the drawing when hold is off

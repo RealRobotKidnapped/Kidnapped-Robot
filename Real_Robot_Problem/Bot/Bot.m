@@ -137,8 +137,8 @@ classdef Bot
                 calibratedAngle_deg = 0.013 * angle_deg + angle_deg;
                 tachoLimit = int32((bot.RobotRadius_m/bot.WheelRadius_m)*abs(calibratedAngle_deg));
                 %--------------------------------------
-                bot.MotorA.TachoLimit = int16(tachoLimit);
-                bot.MotorB.TachoLimit = int16(tachoLimit);
+                bot.MotorA.TachoLimit = int32(tachoLimit);
+                bot.MotorB.TachoLimit = int32(tachoLimit);
                 %--------------------------------------
                 % -------------------------------------    
                 if angle_deg > 0
