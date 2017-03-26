@@ -29,32 +29,52 @@ while(n < maxNumOfIterations)
             end
         end
         if(scanflag == 0)
-            bot.turn(turnBot);
+            aflag = 0;
+            bflag = 0;
+             
+            for i = 1:length(botScan)
+                if (i < 6)
+                    if(botScan(i,:) < 13)
+                    aflag = 1;
+                    end
+                else
+                    if(botScan(i,:) < 13)
+                    bflag = 2;
+                    end
+                end
+            end
+            
+            if((botScan(1,:) < 13) || (aflag == 1 && bflag == 2))
+                bot.move(-10);
+                bot.turn(-turnBot);
+                for i =1:num %for all the particles.
+                    particles(i).move(-10);
+                    particles(i).turn(-turnBot); 
+                end
+            elseif(aflag == 1)   
+                bot.turn(turnBot);
+                for i =1:num %for all the particles.
+                    particles(i).turn(turnBot); 
+                end
+            elseif(bflag == 2)
+                bot.turn(-turnBot);
+                for i =1:num %for all the particles.
+                    particles(i).turn(-turnBot); 
+                end
+            else
+                movedistance = 5;
+                bot.move(movedistance);
+                bot.turn(turnBot);
+                for i =1:num %for all the particles.
+                    particles(i).move(movedistance); 
+                    particles(i).turn(turnBot); 
+                end
+             end  
             botScan = bot.ultraScan(scans);
             botScan
         end
     end
-%     for i = 1:length(botScan)
-%         if (botScan(i,:) < 5 || botScan(i,:) > 130)
-%             scanflag = 1;
-%             break;
-%         end
-%     end
-%     
-%     if(scanflag == 1)  
-%         botScan = bot.ultraScan(scans);
-%         botScan
-%     end
-    
-%     figure(3)
-%         hold off; %the drawMap() function will clear the drawing when hold is off
-%         particles(1).drawMap(); %drawMap() turns hold back on again, so you can draw the botsn
-%         for i =1:num
-%             particles(i).drawBot(3); %draw particle with line length 3 and default color
-%         end
-% %         Friend_mean.drawBot(30, 'r');
-%         drawnow;
-        
+
     weight = zeros(num,1);
     sub = zeros(scans,num);
     p_w = zeros(scans,1);
@@ -221,21 +241,21 @@ while(n < maxNumOfIterations)
     end
 
     if((botScan(1,:) < 13) || (aflag == 1 && bflag == 2))
-        bot.move(-10);
+        bot.move(-14);
         bot.turn(-turn);
         for i =1:num %for all the particles.
-        particles(i).move(-10);
-        particles(i).turn(-turn); 
+            particles(i).move(-14);
+            particles(i).turn(-turn); 
         end
     elseif(aflag == 1)   
         bot.turn(turn);
         for i =1:num %for all the particles.
-        particles(i).turn(turn); 
+            particles(i).turn(turn); 
         end
     elseif(bflag == 2)
         bot.turn(-turn);
         for i =1:num %for all the particles.
-        particles(i).turn(-turn); 
+            particles(i).turn(-turn); 
         end
     else
 %         if (distanceToObstacle > 30)
@@ -246,8 +266,8 @@ while(n < maxNumOfIterations)
         bot.move(movedistance);
         bot.turn(turn);
         for i =1:num %for all the particles.
-        particles(i).move(movedistance); 
-        particles(i).turn(turn); 
+            particles(i).move(movedistance); 
+            particles(i).turn(turn); 
         end
     end     
     
