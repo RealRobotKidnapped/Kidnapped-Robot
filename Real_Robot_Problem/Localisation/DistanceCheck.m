@@ -189,8 +189,23 @@ while(n < maxNumOfIterations)
     Friend_mean.setScanConfig(Friend_mean.generateScanConfig(scans));
     Friend_mean.setBotAng(mean(ang));
     Friend_mean.setBotPos(mean(pos));
-
     
+    %Set the mode estimate
+    Friend_mode = BotSim(map); %, [ sensorNoise, motionNoise, turningNoise ], 0);
+    Friend_mode.setScanConfig(Friend_mode.generateScanConfig(scans));
+    Friend_mode.setBotPos(mode(round(pos)));
+    Friend_mode.setBotAng(mean(ang));
+    
+    Friend_meanScan = Friend_mean.ultraScan();
+    Friend_modeScan = Friend_mode.ultraScan();
+    diff_mean = norm(Friend_meanScan-botScan);
+    diff_mode = norm(Friend_modeScan-botScan);
+
+    if diff_mean < diff_mode
+        Friend_mean.getBotPos()
+    else
+        Friend_mode.getBotPos()
+    end
 %         figure(3)
 %         hold off; %the drawMap() function will clear the drawing when hold is off
 %         particles(1).drawMap(); %drawMap() turns hold back on again, so you can draw the botsn
@@ -302,21 +317,39 @@ while(n < maxNumOfIterations)
     drawnow; 
 end
 
-    botScan = bot.ultraScan(scans);
+%     botScan = bot.ultraScan(scans);
     difference_mean= zeros(360,1);
+    difference_mode= zeros(360,1);
     
     for i=1:360   
     Friend_meanScan = Friend_mean.ultraScan();
-    difference_mean(i) = norm(Friend_meanScan-botScan);
+    Friend_modeScan = Friend_mode.ultraScan();
+    difference_mean(i) = norm(Friend_meanScan - botScan);
+    difference_mode(i) = norm(Friend_modeScan - botScan);
     Friend_mean.setBotAng(i*pi/180);
+    Friend_mode.setBotAng(i*pi/180);
     end
     
+    %find the best orientation for the mean estimate
+    [min_diff_mean, min_pos_mean] = min(difference_mean);
+    Friend_mean.setBotAng(min_pos_mean*pi/180); 
+
+    %find the best orientation for the mode estimate
+    [min_diff_mode, min_pos_mode]=min(difference_mode);
+    Friend_mode.setBotAng(min_pos_mode*pi/180);
+
+
+    if min_diff_mean < min_diff_mode %pick best from mean or mode estimates
+        Friend = Friend_mean;
+    else
+        Friend = Friend_mode;
+    end
     figure(3)
         hold off; %the drawMap() function will clear the drawing when hold is off
         particles(1).drawMap(); %drawMap() turns hold back on again, so you can draw the botsn
         for i =1:num
             particles(i).drawBot(3); %draw particle with line length 3 and default color
         end
-        Friend_mean.drawBot(30, 'r');
+        Friend.drawBot(30, 'r');
         drawnow;
 end

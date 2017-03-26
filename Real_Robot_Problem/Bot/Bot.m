@@ -167,7 +167,8 @@ classdef Bot
        
         function rotateDistanceSensor(bot, power_pct, angle_deg)
             bot.MotorC.ActionAtTachoLimit = 'Brake';
-            bot.MotorC.Power = sign(angle_deg)*power_pct;
+%             bot.MotorC.Power = sign(angle_deg)*power_pct;
+            bot.MotorC.Power = power_pct;
             bot.MotorC.SmoothStart = false;
             bot.MotorC.TachoLimit = abs(angle_deg);
                         
@@ -184,7 +185,7 @@ classdef Bot
             distances_cm = zeros(count, 2);
             
 %             % set initial position
-              totAngle_deg = 318.5;
+              totAngle_deg = 318;
 
 %             rotateDistanceSensor(bot, power_pct, totAngle_deg);
             
