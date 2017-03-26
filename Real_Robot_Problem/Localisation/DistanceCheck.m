@@ -21,13 +21,15 @@ while(n < maxNumOfIterations)
     botScan
 
     scanflag = 0;
-    while(scanflag == 1)
+    while(scanflag == 0)
+        scanflag = 1;
         for i = 1:length(botScan)
             if (botScan(i,:) < 5 || botScan(i,:) > 130)
-            scanflag = 1;
+            scanflag = 0;
             end
         end
-        if(scanflag == 1)
+        if(scanflag == 0)
+            bot.turn(turnBot);
             botScan = bot.ultraScan(scans);
             botScan
         end
