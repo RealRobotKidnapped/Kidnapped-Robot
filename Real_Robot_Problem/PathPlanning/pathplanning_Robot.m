@@ -16,6 +16,7 @@ disp(stPoint);
 disp(botAng);
 
 h = round(dims(1)*1.5);
+% h = round(dims(1));
 
 fprintf('Starting Point: %.3f, %.3f \n', stPoint);
 fprintf('Starting Angle: %.3f \n', botAng);
@@ -47,29 +48,13 @@ phew(2,:) = target;
  end
  
 pewIndex = 1;
-
- 
-
 withinBounds = ones(RI,1);
 
- 
-
  for i = 1:(RI-1)
-
-     
-
-     %disp(i);
-
-     
-
      particle.setBotPos(phew(i,:));
-
      particle.generateScanConfig(6);
-
-     
-
      boundary = particle.ultraScan();
-
+     
      %disp(boundary);
 
      
@@ -220,8 +205,12 @@ for i = 2:tests
 %           bAng = bAng + pi;
 %       end
      turn = bAng-curAng;
-     
+     turn = mod(turn, (2*pi));
      disp(turn);
+     
+     if(turn > pi)
+         turn = ((2 * pi) - turn) * -1;
+     end    
     
      %fprintf('turn: %.3f \n', turn);
      bot.turn(turn);
