@@ -229,5 +229,3 @@ classdef Bot
         end
     end
 end
-
-
