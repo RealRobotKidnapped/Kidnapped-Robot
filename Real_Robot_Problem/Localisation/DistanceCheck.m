@@ -6,8 +6,12 @@ num = 600;
 particles(num,1) = BotSim;
 variance = 10;
 
+sensorNoise = 1.363160109; % from robot calibration - 0;%
+motionNoise = 0.012088592; % from robot calibration - 0;%
+turningNoise = toRadians('degrees', 2.444208795); % from robot calibration - 0;%
+    
 for i = 1:num
-    particles(i) = BotSim(map);  %each particle should use the same map as the botSim object
+    particles(i) = BotSim(map, [ sensorNoise, motionNoise, turningNoise ], 0);  %each particle should use the same map as the botSim object
     particles(i).randomPose(0); %spawn the particles in random locations
     particles(i).setScanConfig(particles(i).generateScanConfig(scans));
 end
@@ -17,6 +21,9 @@ n = 0;
 while(n < maxNumOfIterations)
     n = n+1;
     hold on;
+    if((n-1) == 0)
+        bot.beforeScanAllignSensor();
+    end
     botScan = bot.ultraScan(scans);
     botScan
 
@@ -34,11 +41,11 @@ while(n < maxNumOfIterations)
              
             for i = 1:length(botScan)
                 if (i < 6)
-                    if(botScan(i,:) < 13)
+                    if(botScan(i,:) < 15)
                     aflag = 1;
                     end
                 else
-                    if(botScan(i,:) < 13)
+                    if(botScan(i,:) < 15)
                     bflag = 2;
                     end
                 end
@@ -225,6 +232,7 @@ while(n < maxNumOfIterations)
     mutation_rate=0.01;
     
     for i=1:mutation_rate*num
+%     for i=1:mutation_rate*TopBest
         particles(randi(num)).randomPose(0);
     end
     
@@ -245,11 +253,11 @@ while(n < maxNumOfIterations)
     
     for i = 1:length(botScan)
         if (i < 6)
-            if(botScan(i,:) < 13)
+            if(botScan(i,:) < 15)
             aflag = 1;
             end
         else
-            if(botScan(i,:) < 13)
+            if(botScan(i,:) < 15)
             bflag = 2;
             end
         end
@@ -317,7 +325,7 @@ while(n < maxNumOfIterations)
     drawnow; 
 end
 
-%     botScan = bot.ultraScan(scans);
+    botScan = bot.ultraScan(scans);
     difference_mean= zeros(360,1);
     difference_mode= zeros(360,1);
     
@@ -351,5 +359,6 @@ end
             particles(i).drawBot(3); %draw particle with line length 3 and default color
         end
         Friend.drawBot(30, 'r');
+        plot(target(1),target(2),'Marker','o','Color','g');
         drawnow;
 end
