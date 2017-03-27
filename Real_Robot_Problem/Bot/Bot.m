@@ -80,7 +80,7 @@ classdef Bot
         
         function distances_cm = ultraScan(bot,numOfScans)
 
-            survey = bot.survey(-50, 360/numOfScans);
+            survey = bot.survey(-40, 360/numOfScans);
             distances_cm = [ 
                 survey(1, 2); 
                 survey(2, 2); 
@@ -179,21 +179,27 @@ classdef Bot
             bot.MotorC.Stop();
         end
         
+        function beforeScanAllignSensor(bot)
+            rotateDistanceSensor(bot, -50, 15);
+            rotateDistanceSensor(bot, +50, 30);
+            rotateDistanceSensor(bot, -50, 15);      
+        end
         % rotate anti-clockwise
         function distances_cm = survey(bot, power_pct, angle_deg)
             count = 360/angle_deg;
             distances_cm = zeros(count, 2);
             
 %             % set initial position
-              totAngle_deg = 318;
+              totAngle_deg = 320;
 
 %             rotateDistanceSensor(bot, power_pct, totAngle_deg);
             
             for i = 1:count
                 distance_cm = GetUltrasonic(SENSOR_4);
+                calibrated_sensed_distance = distance_cm + 2;
 %                 distance_cm = getDistance_cm(bot)
 %                 % obtain distance measurement
-                distances_cm(i,:) =  distance_cm;
+                distances_cm(i,:) =  calibrated_sensed_distance;
 %                 
                 if i < count
                     % update position 
@@ -223,4 +229,5 @@ classdef Bot
         end
     end
 end
+
 
