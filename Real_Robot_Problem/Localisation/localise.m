@@ -1,63 +1,94 @@
-function [botSim] = localise(botSim,map,target)
-%This function returns botSim, and accepts, botSim, a map and a target.
-%LOCALISE Template localisation function
+function [Friend] = localise(bot,map,target)
 
-%% setup code
-
-scans =6;
-RobotSize = 13 ;
-%you can modify the map to take account of your robots configuration space
-modifiedMap = map; %you need to do this modification yourself
-% botSim.setMap(modifiedMap);
-% 
-% variance = 60; 
-
-num =600;
+scans = 9;
+turnBot = pi/5;
+num = 600;
 particles(num,1) = BotSim;
-
-%Particle Filter Localisation Function
+variance = 10;
 
 sensorNoise = 1.363160109; % from robot calibration - 0;%
 motionNoise = 0.012088592; % from robot calibration - 0;%
-turningNoise = toRadians('degrees', 5.444208795); % from robot calibration - 0;%
-turnBot =pi/4;
-
-%generate some random particles inside the map
+turningNoise = toRadians('degrees', 2.444208795); % from robot calibration - 0;%
+    
 for i = 1:num
-    particles(i) = BotSim(modifiedMap, [sensorNoise, motionNoise, turningNoise],0);  %each particle should use the same map as the botSim object
-    particles(i).randomPose(13); %spawn the particles in random locations
+    particles(i) = BotSim(map, [ sensorNoise, motionNoise, turningNoise ], 0);  
+    particles(i).randomPose(0); 
     particles(i).setScanConfig(particles(i).generateScanConfig(scans));
 end
 
-%% Localisation code
 maxNumOfIterations = 30;
 n = 0;
 
-% to scan in 30 directions
-botSim.setScanConfig(botSim.generateScanConfig(scans));
-
-while(n < maxNumOfIterations) %particle filter loop
-    n = n+1; %increment the current number of iterations
+while(n < maxNumOfIterations)
+    
+    n = n+1;
     hold on;
-    botScan = botSim.ultraScan(); %get a scan from the real robot.
     
-    while (botScan < 0)  %Catch invalid scan results
-        bot.turn(turnBot);
-        
-        for i=1:num
-           particles(i).turn(turnBot); 
+    botScan = bot.ultraScan(scans);
+    botScan
+
+    scanflag = 0; % flag value to check if the robotscan return legitimate results.
+    while(scanflag == 0)
+        scanflag = 1;
+        for i = 1:length(botScan)
+            if (botScan(i,:) < 5 || botScan(i,:) > 130) % illegit value
+            scanflag = 0;
+            end
         end
-        botScan = bot.ultraScan(); %get a scan from the real robot.
+        if(scanflag == 0)
+            aflag = 0;
+            bflag = 0;
+             
+            for i = 1:length(botScan)
+                if (i < 6)
+                    if(botScan(i,:) < 15) % if robot has wall in left side
+                    aflag = 1;
+                    end
+                else
+                    if(botScan(i,:) < 15) % if robot has wall in right side
+                    bflag = 2; 
+                    end
+                end
+            end
+            
+            if((botScan(1,:) < 13) || (aflag == 1 && bflag == 2)) % if robot has wall in both left and right side and a wall ahead. In this case it moves back.
+                bot.move(-10); % move back 10 cm
+                bot.turn(-turnBot); % turn
+                for i =1:num %for all the particles.
+                    particles(i).move(-10);
+                    particles(i).turn(-turnBot); 
+                end
+            elseif(aflag == 1)   
+                bot.turn(turnBot); % turn clockwise
+                for i =1:num %for all the particles.
+                    particles(i).turn(turnBot); 
+                end
+            elseif(bflag == 2)
+                bot.turn(-turnBot); %turn anticlockwise
+                for i =1:num %for all the particles.
+                    particles(i).turn(-turnBot); 
+                end
+            else
+                movedistance = 5; 
+                bot.move(movedistance); % move ahead 5 cm
+                bot.turn(turnBot);
+                for i =1:num %for all the particles.
+                    particles(i).move(movedistance); 
+                    particles(i).turn(turnBot); 
+                end
+             end  
+            botScan = bot.ultraScan(scans); % Scan again
+            botScan
+        end
     end
-    
-    %% Write code for updating your particles scans
+
     weight = zeros(num,1);
     sub = zeros(scans,num);
     p_w = zeros(scans,1);
     
     for i=1:num
-        if particles(i).insideMap() ==0
-            particles(i).randomPose(0);
+        if particles(i).insideMap() == 0
+            particles(i).randomPose(10);
         end
         
         [dist , crossPnt] = particles(i).ultraScan();
@@ -75,15 +106,64 @@ while(n < maxNumOfIterations) %particle filter loop
         weight(i) = max_weight;
     end 
     
-    w_distribution = weight./sum(weight);
+    w_distribution = weight./sum(weight); % Distribute weight
     %% Write code for resampling your particles
+
+    [~,BestLocations] = sort(w_distribution ,'descend'); % sort the values in decreasing order and assign to the location
+    [~,BestAngles] = sort(w_distribution ,'descend');
     
-    for i = 1:num
-        j = find(rand() <= cumsum(w_distribution),1);
-        particles(i).setBotPos(particles(j).getBotPos());
-        particles(i).setBotAng(particles(j).getBotAng());
+    locations = zeros(num,2);
+    angles = zeros(num,2);
+    ranking = zeros(num,1);
+        
+    for i=1:num
+        locations(i,1:2) = particles(BestLocations(i)).getBotPos();
+        angles(i) = particles(BestAngles(i)).getBotAng();
+        ranking(i) = int16(num * w_distribution(BestLocations(i)));
+    end
+     
+    TopBest = int16(num * .50); % take 50% population back
+    
+    for i=1:TopBest 
+        particles(i).setBotPos(locations(i,1:2));
+        particles(i).setBotAng(angles(i));
     end
     
+    index_of_num = TopBest+1;             
+    index_location = 1;
+    
+    while index_of_num < num      
+        if index_location == TopBest
+             index_location = 1;
+        end
+        
+        orgenal_loc = locations(index_location,1:2);
+        orgenal_ang = angles(index_location);
+        
+        looptimes = ranking(index_location);
+        
+        while looptimes > 0 && index_of_num < num
+            
+            loc = orgenal_loc;
+            ang = orgenal_ang;
+            
+            particles( index_of_num).setBotPos(loc);
+            particles( index_of_num).setBotAng(ang);
+            
+            index_of_num = index_of_num + 1;              
+            looptimes = looptimes -1;
+        end
+        index_location = index_location + 1;
+    end
+    
+    figure(1)
+        hold off; 
+        particles(1).drawMap(); 
+        for i =1:num
+            particles(i).drawBot(3); 
+        end
+        drawnow;
+        
     %particle's positions and angles
     ang = zeros(num,1);
     pos = zeros(num, 2);   
@@ -98,122 +178,124 @@ while(n < maxNumOfIterations) %particle filter loop
     Friend_mean.setBotAng(mean(ang));
     Friend_mean.setBotPos(mean(pos));
     
-    botScan = botSim.ultraScan();
-    difference_mean= zeros(360,1);
+    Friend_mode = BotSim(map); 
+    Friend_mode.setScanConfig(Friend_mode.generateScanConfig(scans));
+    Friend_mode.setBotPos(mode(round(pos)));
+    Friend_mode.setBotAng(mean(ang));
     
-    for i=1:360    %Check scans of mode and mean estimates at every angle
     Friend_meanScan = Friend_mean.ultraScan();
-    difference_mean(i) = norm(Friend_meanScan-botScan);
-    Friend_mean.setBotAng(i*pi/180);
+    Friend_modeScan = Friend_mode.ultraScan();
+    diff_mean = norm(Friend_meanScan-botScan);
+    diff_mode = norm(Friend_modeScan-botScan);
+
+    if diff_mean < diff_mode
+        Friend_mean.getBotPos()
+    else
+        Friend_mode.getBotPos()
     end
-    
-    %find the best orientation for the mean estimate
-    [min_diff_mean, min_pos_mean] = min(difference_mean);
-    Friend_mean.setBotAng(min_pos_mean*pi/180); 
-    Friend = Friend_mean;
     
     %% Write code to check for convergence   
-
-    if std(pos) < 2.3 % convergence threshold
-        break; %particles have converged
+    if std(pos) < 5 % convergence threshold
+        break; %on convergence of particles
     end
-
-    %% Write code to take a percentage of your particles and respawn in randomised locations (important for robustness)	
-    mutation_rate=0.01;
+    
+    %% Write code to take a percentage of your particles and respawn in randomised locations (important for robustness)
+    mutation_rate=0.01; 
     
     for i=1:mutation_rate*num
         particles(randi(num)).randomPose(0);
     end
     
+
     %% Write code to decide how to move next
-
-    [maxDistance, maxIndex] = max(botScan);
-    cover = maxDistance*0.9*rand(); %random maximum distance
-    turn = (maxIndex-1)*2*pi/scans; %orientate towards the max distance        
+    aflag = 0;
+    bflag = 0;
+    turn = pi/4; %turn 45 degree
     
-    botSim.turn(turn);        
-    botSim.move(cover); %move the real robot. These movements are recorded for marking 
-
-    for i =1:num %for all the particles.
-          particles(i).turn(turn);
-          particles(i).move(cover);
+    %Code to avoid collision
+    for i = 1:length(botScan)
+        if (i < 6)
+            if(botScan(i,:) < 15)
+            aflag = 1;
+            end
+        else
+            if(botScan(i,:) < 15)
+            bflag = 2;
+            end
+        end
     end
-    
+
+    if((botScan(1,:) < 18) || (aflag == 1 && bflag == 2))
+        bot.move(-14);
+        bot.turn(-turn);
+        for i =1:num %for all the particles.
+            particles(i).move(-14);
+            particles(i).turn(-turn); 
+        end
+    elseif(aflag == 1)   
+        bot.turn(turn);
+        for i =1:num %for all the particles.
+            particles(i).turn(turn); 
+        end
+    elseif(bflag == 2)
+        bot.turn(-turn);
+        for i =1:num %for all the particles.
+            particles(i).turn(-turn); 
+        end
+    else
+        movedistance = 5;
+        bot.move(movedistance);
+        bot.turn(turn);
+        for i =1:num %for all the particles.
+            particles(i).move(movedistance); 
+            particles(i).turn(turn); 
+        end
+    end     
+        
     %% Drawing
     %only draw if you are in debug mode or it will be slow during marking
-    if botSim.debug()
-        hold off; %the drawMap() function will clear the drawing when hold is off
-        botSim.drawMap(); %drawMap() turns hold back on again, so you can draw the bots
-        botSim.drawScanConfig();
-        botSim.drawBot(30,'r'); %draw robot with line length 30 and green
-        scatter(crossPnt(:,1),crossPnt(:,2),'marker','o','lineWidth',3);
-        for i =1:num
-            particles(i).drawBot(3); %draw particle with line length 3 and default color
-        end
-        drawnow;
-    end
-end
-
-%% Path Planning
-
-%% Plot the chosen path
-LocationRobot = Friend.getBotPos();
-while LocationRobot(1) > target(1) + 0.002 || LocationRobot(1) < target(1) - 0.002 || LocationRobot(2) > target(2) + 0.002 || LocationRobot(2) < target(2) - 0.002
-    
-    [angle, distance] = Dijkstra(LocationRobot, target, map);
-    RobotDirection = Friend.getBotAng();
-    angleRadian = (angle) * pi / 180; 
-
-    if botSim.debug()
-        botSim.drawBot(10,'red');
-        Friend.drawBot(10,'black');
-    end
-   
-    botSim.turn(pi-RobotDirection+angleRadian);
-    Friend.turn(pi-RobotDirection+angleRadian);
-    
-    botScan = botSim.ultraScan();
-    
-    %if robot moves beyond wall
-    if botScan(1)<= distance;
-        %[botSim, Friend] = ParticleFilter(botSim, modifiedMap,num, maxNumOfIterations, scans);
-        localise(botSim, modifiedMap, target);
-        break;
-    else
-        botSim.move(distance);
-        Friend.move(distance);
-    end
-    
-    botScan = botSim.ultraScan();
-    FriendScan = Friend.ultraScan();
-    
-    %calculate the difference between the ghost robot and the real robot
-    difference = (sum(FriendScan-botScan)/scans);
-    threshold = 3;
-    
-    %Run particle filter if the difference between the ultrasound values is
-    %above the threshold
-    if (abs(difference) > threshold)
-%         [botSim, Friend] = ParticleFilter(botSim, modifiedMap,num, maxNumOfIterations, scans);
-        localise(botSim, modifiedMap, target);
-        break;
-    end
-    
-    %Estimated robot location
-    LocationRobot = Friend.getBotPos();
-    if botSim.debug()
-        pause(1);
-    end
-end
-
-%% Drawing
-%only draw if you are in debug mode or it will be slow during marking
-if botSim.debug()
     figure(1)
-    hold off; %the drawMap() function will clear the drawing when hold is off
-    botSim.drawMap(); %drawMap() turns hold back on again, so you can draw the bots
-    botSim.drawBot(30,'g'); %draw robot with line length 30 and green
-    Friend.drawBot(30,'b'); %draws the mean ghost bot with line length 30 and red
-    drawnow;
+    hold off; 
+    particles(1).drawMap(); 
+    for i =1:num
+        particles(i).drawBot(3); 
+    end
+    plot(target(1),target(2),'Marker','o','Color','g');
+    drawnow; 
 end
+
+    botScan = bot.ultraScan(scans);
+    difference_mean= zeros(360,1);
+    difference_mode= zeros(360,1);
+    
+    for i=1:360   
+        Friend_meanScan = Friend_mean.ultraScan();
+        Friend_modeScan = Friend_mode.ultraScan();
+        difference_mean(i) = norm(Friend_meanScan - botScan);
+        difference_mode(i) = norm(Friend_modeScan - botScan);
+        Friend_mean.setBotAng(i*pi/180);
+        Friend_mode.setBotAng(i*pi/180);
+    end
+    
+    [min_diff_mean, min_pos_mean] = min(difference_mean);
+    Friend_mean.setBotAng(min_pos_mean*pi/180); 
+
+    [min_diff_mode, min_pos_mode]=min(difference_mode);
+    Friend_mode.setBotAng(min_pos_mode*pi/180);
+
+
+    if min_diff_mean < min_diff_mode 
+        Friend = Friend_mean;
+    else
+        Friend = Friend_mode;
+    end
+    figure(2)
+        hold off; 
+        particles(1).drawMap(); 
+        for i =1:num
+            particles(i).drawBot(3); 
+        end
+        Friend.drawBot(30, 'r');
+        plot(target(1),target(2),'Marker','o','Color','g');
+        drawnow;
 end
