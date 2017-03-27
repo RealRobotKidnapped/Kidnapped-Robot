@@ -9,8 +9,8 @@ modifiedMap = map;
 
 %% Plot the chosen path
 
-stPoint = bot.getBotPos();
-botAng = bot.getBotAng();
+stPoint = botSim.getBotPos();
+botAng = botSim.getBotAng();
 
 disp(stPoint);
 disp(botAng);
@@ -229,7 +229,7 @@ for i = 2:tests
      distance = sqrt((nextPoint(1)-curPoint(1))^2 + (nextPoint(2)-curPoint(2))^2);
      %fprintf('distance: %.3f \n', distance);
      extrad = distance*(0.5/10);
-     bot.move(distance-extrad);
+     bot.move(distance);
      curAng = bAng;
      curPoint = cpath(i,:);
 end
