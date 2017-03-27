@@ -41,11 +41,11 @@ while(n < maxNumOfIterations)
              
             for i = 1:length(botScan)
                 if (i < 6)
-                    if(botScan(i,:) < 15) % if robot has wall in left side
+                    if(botScan(i,:) < 16) % if robot has wall in left side
                     aflag = 1;
                     end
                 else
-                    if(botScan(i,:) < 15) % if robot has wall in right side
+                    if(botScan(i,:) < 16) % if robot has wall in right side
                     bflag = 2; 
                     end
                 end
@@ -173,29 +173,72 @@ while(n < maxNumOfIterations)
         ang(i)=particles(i).getBotAng();
     end
     
-    Friend_mean = BotSim(map);
-    Friend_mean.setScanConfig(Friend_mean.generateScanConfig(scans));
-    Friend_mean.setBotAng(mean(ang));
-    Friend_mean.setBotPos(mean(pos));
-    
-    Friend_mode = BotSim(map); 
-    Friend_mode.setScanConfig(Friend_mode.generateScanConfig(scans));
-    Friend_mode.setBotPos(mode(round(pos)));
-    Friend_mode.setBotAng(mean(ang));
-    
-    Friend_meanScan = Friend_mean.ultraScan();
-    Friend_modeScan = Friend_mode.ultraScan();
-    diff_mean = norm(Friend_meanScan-botScan);
-    diff_mode = norm(Friend_modeScan-botScan);
-
-    if diff_mean < diff_mode
-        Friend_mean.getBotPos()
-    else
-        Friend_mode.getBotPos()
-    end
-    
     %% Write code to check for convergence   
     if std(pos) < 5 % convergence threshold
+        
+        for i = 1:length(botScan)
+            if (i < 6)
+                if(botScan(i,:) < 16) % if robot has wall in left side
+                aflag = 1;
+                end
+            else
+                if(botScan(i,:) < 16) % if robot has wall in right side
+                bflag = 2; 
+                end
+            end
+        end
+
+        if((botScan(1,:) < 13) || (aflag == 1 && bflag == 2)) % if robot has wall in both left and right side and a wall ahead. In this case it moves back.
+            bot.move(-10); % move back 10 cm
+            bot.turn(-turnBot); % turn
+            for i =1:num %for all the particles.
+                particles(i).move(-10);
+                particles(i).turn(-turnBot); 
+            end
+        elseif(aflag == 1)   
+            bot.turn(turnBot); % turn clockwise
+            bot.move(-8);
+            for i =1:num %for all the particles.
+                particles(i).turn(turnBot); 
+                particles(i).move(-8);
+            end
+        elseif(bflag == 2)
+            bot.turn(-turnBot); %turn anticlockwise
+            bot.move(-8);
+            for i =1:num %for all the particles.
+                particles(i).turn(-turnBot); 
+                particles(i).move(-8);
+            end
+        else
+            movedistance = 5; 
+            bot.move(movedistance); % move ahead 5 cm
+            bot.turn(turnBot);
+            for i =1:num %for all the particles.
+                particles(i).move(movedistance); 
+                particles(i).turn(turnBot); 
+            end
+        end
+        
+        Friend_mean = BotSim(map);
+        Friend_mean.setScanConfig(Friend_mean.generateScanConfig(scans));
+        Friend_mean.setBotAng(mean(ang));
+        Friend_mean.setBotPos(mean(pos));
+
+        Friend_mode = BotSim(map); 
+        Friend_mode.setScanConfig(Friend_mode.generateScanConfig(scans));
+        Friend_mode.setBotPos(mode(round(pos)));
+        Friend_mode.setBotAng(mean(ang));
+
+        Friend_meanScan = Friend_mean.ultraScan();
+        Friend_modeScan = Friend_mode.ultraScan();
+        diff_mean = norm(Friend_meanScan-botScan);
+        diff_mode = norm(Friend_modeScan-botScan);
+
+        if diff_mean < diff_mode
+            Friend_mean.getBotPos()
+        else
+            Friend_mode.getBotPos()
+        end
         break; %on convergence of particles
     end
     
@@ -215,18 +258,18 @@ while(n < maxNumOfIterations)
     %Code to avoid collision
     for i = 1:length(botScan)
         if (i < 6)
-            if(botScan(i,:) < 15)
+            if(botScan(i,:) < 16)
             aflag = 1;
             end
         else
-            if(botScan(i,:) < 15)
+            if(botScan(i,:) < 16)
             bflag = 2;
             end
         end
     end
 
-    if((botScan(1,:) < 18) || (aflag == 1 && bflag == 2))
-        bot.move(-14);
+    if((botScan(1,:) < 13) || (aflag == 1 && bflag == 2))
+        bot.move(-10);
         bot.turn(-turn);
         for i =1:num %for all the particles.
             particles(i).move(-14);
@@ -234,13 +277,17 @@ while(n < maxNumOfIterations)
         end
     elseif(aflag == 1)   
         bot.turn(turn);
+        bot.move(-8);
         for i =1:num %for all the particles.
             particles(i).turn(turn); 
+            particles(i).move(-8);
         end
     elseif(bflag == 2)
         bot.turn(-turn);
+        bot.move(-8);
         for i =1:num %for all the particles.
             particles(i).turn(-turn); 
+            particles(i).move(-8);
         end
     else
         movedistance = 5;
@@ -255,16 +302,16 @@ while(n < maxNumOfIterations)
     %% Drawing
     %only draw if you are in debug mode or it will be slow during marking
     figure(1)
-    hold off; 
-    particles(1).drawMap(); 
-    for i =1:num
-        particles(i).drawBot(3); 
-    end
-    plot(target(1),target(2),'Marker','o','Color','g');
-    drawnow; 
+        hold off; 
+        particles(1).drawMap(); 
+        for i =1:num
+            particles(i).drawBot(3); 
+        end
+        plot(target(1),target(2),'Marker','o','Color','g');
+        drawnow; 
 end
 
-    botScan = bot.ultraScan(scans);
+    botScan = bot.ultraScan(scans);        
     difference_mean= zeros(360,1);
     difference_mode= zeros(360,1);
     
