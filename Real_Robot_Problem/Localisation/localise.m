@@ -51,13 +51,22 @@ while(n < maxNumOfIterations)
                 end
             end
             
-            if((botScan(1,:) < 13) || (aflag == 1 && bflag == 2)) % if robot has wall in both left and right side and a wall ahead. In this case it moves back.
-                bot.move(-8); % move back 10 cm
-                bot.turn(-turnBot); % turn
-                for i =1:num %for all the particles.
-                    particles(i).move(-10);
-                    particles(i).turn(-turnBot); 
-                end
+            if((aflag == 1 && bflag == 2)) % if robot has wall in both left and right side and a wall ahead. In this case it moves back.
+                if((botScan(1,:) > 13))
+                    bot.move(8); % move back 10 cm
+                    bot.turn(turnBot); % turn
+                    for i =1:num %for all the particles.
+                        particles(i).move(8);
+                        particles(i).turn(turnBot); 
+                    end
+                elseif((botScan(5,:) > 13) && (botScan(6,:) > 13))
+                    bot.move(-8); % move back 10 cm
+                    bot.turn(-turnBot); % turn
+                    for i =1:num %for all the particles.
+                        particles(i).move(-8);
+                        particles(i).turn(turnBot); 
+                    end
+                end        
             elseif(aflag == 1)   
                 bot.turn(turnBot); % turn clockwise
                 for i =1:num %for all the particles.
@@ -188,13 +197,22 @@ while(n < maxNumOfIterations)
             end
         end
 
-        if((botScan(1,:) < 13) || (aflag == 1 && bflag == 2)) % if robot has wall in both left and right side and a wall ahead. In this case it moves back.
-            bot.move(-10); % move back 10 cm
-            bot.turn(-turnBot); % turn
-            for i =1:num %for all the particles.
-                particles(i).move(-10);
-                particles(i).turn(-turnBot); 
-            end
+        if((aflag == 1 && bflag == 2)) % if robot has wall in both left and right side and a wall ahead. In this case it moves back.
+                if((botScan(1,:) > 13))
+                    bot.move(8); % move back 10 cm
+                    bot.turn(turnBot); % turn
+                    for i =1:num %for all the particles.
+                        particles(i).move(8);
+                        particles(i).turn(turnBot); 
+                    end
+                elseif((botScan(5,:) > 13) && (botScan(6,:) > 13))
+                    bot.move(-8); % move back 10 cm
+                    bot.turn(-turnBot); % turn
+                    for i =1:num %for all the particles.
+                        particles(i).move(-8);
+                        particles(i).turn(turnBot); 
+                    end
+                end              
         elseif(aflag == 1)   
             bot.turn(turnBot); % turn clockwise
             bot.move(-8);
@@ -268,13 +286,22 @@ while(n < maxNumOfIterations)
         end
     end
 
-    if((botScan(1,:) < 15) || (aflag == 1 && bflag == 2))
-        bot.move(-8);
-        bot.turn(-turn);
-        for i =1:num %for all the particles.
-            particles(i).move(-14);
-            particles(i).turn(-turn); 
-        end
+    if((aflag == 1 && bflag == 2)) % if robot has wall in both left and right side and a wall ahead. In this case it moves back.
+            if((botScan(1,:) > 15))
+                bot.move(8); % move back 10 cm
+                bot.turn(turnBot); % turn
+                for i =1:num %for all the particles.
+                    particles(i).move(8);
+                    particles(i).turn(turnBot); 
+                end
+            elseif((botScan(5,:) > 15) && (botScan(6,:) > 15))
+                bot.move(-8); % move back 10 cm
+                bot.turn(-turnBot); % turn
+                for i =1:num %for all the particles.
+                    particles(i).move(-8);
+                    particles(i).turn(turnBot); 
+                end
+            end   
     elseif(aflag == 1)   
         bot.turn(turn);
         bot.move(-8);
