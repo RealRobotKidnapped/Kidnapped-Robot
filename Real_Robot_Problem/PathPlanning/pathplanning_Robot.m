@@ -15,7 +15,7 @@ botAng = botSim.getBotAng();
 disp(stPoint);
 disp(botAng);
 
-h = round(dims(1)*1.5);
+h = round(dims(1));
 % h = round(dims(1));
 
 fprintf('Starting Point: %.3f, %.3f \n', stPoint);
@@ -61,7 +61,7 @@ withinBounds = ones(RI,1);
 
      for j = 1:6
 
-         if boundary(j,1) <= 20 && i ~= 1 && i ~= 2
+         if boundary(j,1) <= 10 && i ~= 1 && i ~= 2
 
              withinBounds(i,1) = 0;   
 
@@ -136,20 +136,26 @@ for i = 1:z
             pointsOnLine(k).setScanConfig(botSim.generateScanConfig(6));
             POLscan = pointsOnLine(k).ultraScan();
             for l = 1:6
-                if POLscan(l) < 10
+                if POLscan(l) < 20
                     POLresults(k) = 0;
                 end
             end
         end
         Lia = ismember(0,POLresults);
-%         if sc > dist && (i == 1 || j == 2)
-%             pairs(STindex,:) = [i j];
-%             STindex = STindex +1;
-%         else 
+        count = 0;
+        for p = 1:numPoints
+            if POLresults == 0
+                count = count +1;
+            end
+        end
         if sc > dist && Lia == 0 
             pairs(STindex,:) = [i j];
             STindex = STindex +1;
            
+        else if j == 2 && sc > dist && count < 5
+             pairs(STindex,:) = [i j];
+             STindex = STindex +1;
+            end
         end
     end
 end
