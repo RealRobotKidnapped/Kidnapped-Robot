@@ -258,17 +258,17 @@ while(n < maxNumOfIterations)
     %Code to avoid collision
     for i = 1:length(botScan)
         if (i < 6)
-            if(botScan(i,:) < 16)
+            if(botScan(i,:) < 20)
             aflag = 1;
             end
         else
-            if(botScan(i,:) < 16)
+            if(botScan(i,:) < 20)
             bflag = 2;
             end
         end
     end
 
-    if((botScan(1,:) < 13) || (aflag == 1 && bflag == 2))
+    if((botScan(1,:) < 15) || (aflag == 1 && bflag == 2))
         bot.move(-10);
         bot.turn(-turn);
         for i =1:num %for all the particles.
@@ -277,17 +277,17 @@ while(n < maxNumOfIterations)
         end
     elseif(aflag == 1)   
         bot.turn(turn);
-        bot.move(-8);
+        bot.move(-10);
         for i =1:num %for all the particles.
             particles(i).turn(turn); 
-            particles(i).move(-8);
+            particles(i).move(-10);
         end
     elseif(bflag == 2)
         bot.turn(-turn);
-        bot.move(-8);
+        bot.move(-10);
         for i =1:num %for all the particles.
             particles(i).turn(-turn); 
-            particles(i).move(-8);
+            particles(i).move(-10);
         end
     else
         movedistance = 5;

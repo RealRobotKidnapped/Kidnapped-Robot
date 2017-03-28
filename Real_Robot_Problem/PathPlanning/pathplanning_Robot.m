@@ -121,7 +121,7 @@ for i = 1:z
         %fprintf('scan: %.3f \n',sc);
         dist = sqrt((target(1)-stP(1))^2 + (target(2)-stP(2))^2);
         
-        numPoints = 50;
+        numPoints = 25;
         onLineDist = dist/numPoints;
         
         pointsOnLine(numPoints,1) = BotSim;
@@ -152,7 +152,7 @@ for i = 1:z
             pairs(STindex,:) = [i j];
             STindex = STindex +1;
            
-        else if j == 2 && sc > dist && count < 5
+        else if j == 2 && sc > dist && count <= 5
              pairs(STindex,:) = [i j];
              STindex = STindex +1;
             end
@@ -218,8 +218,20 @@ for i = 2:tests
          turn = ((2 * pi) - turn) * -1;
      end    
     
+    
      %fprintf('turn: %.3f \n', turn);
      bot.turn(turn);
+    %************************************vishal*********************************
+    distanceToWall = ultraScanTest(map,target);
+    TempPoint = BotSim(modifiedmap);
+    TempPoint.setBotPos(botSim.getBotPos());
+    TempPoint.setBotAng(botSim.getBotAng());
+    TempPoint.setScanConfig(botSim.generateScanConfig(1));
+    tempDisToWall = TempPoint.ultraScan();
+    differences = distanceToWall - tempDisToWall;
+    [minDiff, ind] = min(differences);
+    
+    %************************************vishal*********************************
      disp('it hits here');
      distance = sqrt((nextPoint(1)-curPoint(1))^2 + (nextPoint(2)-curPoint(2))^2);
      %fprintf('distance: %.3f \n', distance);

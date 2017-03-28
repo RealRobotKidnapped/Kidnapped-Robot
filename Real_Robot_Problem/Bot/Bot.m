@@ -78,7 +78,7 @@ classdef Bot
         end
         
         function turn(bot, angle_rad)
-            power_pct = 50;
+            power_pct = 70;
             angle_deg = toDegrees('radians', angle_rad);
             calibratedAngle_deg = 0.013 * angle_deg + angle_deg;
             tachoLimit = int32((bot.RobotRadius_m/bot.WheelRadius_m)*abs(calibratedAngle_deg));
@@ -145,7 +145,7 @@ classdef Bot
             distances_cm = zeros(count, 2);
             
             % initial position
-            totAngle_deg = 320;
+            totAngle_deg = 319;
             
             for i = 1:count
                 distance_cm = GetUltrasonic(SENSOR_4);
