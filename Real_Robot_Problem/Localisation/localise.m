@@ -6,9 +6,9 @@ num = 600;
 particles(num,1) = BotSim;
 variance = 10;
 
-sensorNoise = 1.363160109; % from robot calibration - 0;%
-motionNoise = 0.012088592; % from robot calibration - 0;%
-turningNoise = toRadians('degrees', 2.444208795); % from robot calibration - 0;%
+sensorNoise = 1.36; % from robot calibration - 0;%
+motionNoise = 0.012; % from robot calibration - 0;%
+turningNoise = toRadians('degrees', 2.44); % from robot calibration - 0;%
     
 for i = 1:num
     particles(i) = BotSim(map, [ sensorNoise, motionNoise, turningNoise ], 0);  
@@ -52,7 +52,7 @@ while(n < maxNumOfIterations)
             end
             
             if((botScan(1,:) < 13) || (aflag == 1 && bflag == 2)) % if robot has wall in both left and right side and a wall ahead. In this case it moves back.
-                bot.move(-10); % move back 10 cm
+                bot.move(-8); % move back 10 cm
                 bot.turn(-turnBot); % turn
                 for i =1:num %for all the particles.
                     particles(i).move(-10);
@@ -269,7 +269,7 @@ while(n < maxNumOfIterations)
     end
 
     if((botScan(1,:) < 15) || (aflag == 1 && bflag == 2))
-        bot.move(-10);
+        bot.move(-8);
         bot.turn(-turn);
         for i =1:num %for all the particles.
             particles(i).move(-14);
@@ -277,14 +277,14 @@ while(n < maxNumOfIterations)
         end
     elseif(aflag == 1)   
         bot.turn(turn);
-        bot.move(-10);
+        bot.move(-8);
         for i =1:num %for all the particles.
             particles(i).turn(turn); 
             particles(i).move(-10);
         end
     elseif(bflag == 2)
         bot.turn(-turn);
-        bot.move(-10);
+        bot.move(-8);
         for i =1:num %for all the particles.
             particles(i).turn(-turn); 
             particles(i).move(-10);
