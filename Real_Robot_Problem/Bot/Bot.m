@@ -123,23 +123,25 @@ classdef Bot
                 
         end
        
-        function distanceFromObstacle = scanInFront_cm(bot)
-            distanceFromObstacle = GetUltrasonic(SENSOR_4);
-        end
-       
-        function rotateSensor(bot, power_pct, angle_deg)
-            bot.MotorC.ActionAtTachoLimit = 'Brake';
-            bot.MotorC.Power = power_pct;
-            bot.MotorC.SmoothStart = false;
-            bot.MotorC.TachoLimit = abs(angle_deg);
-                        
-            bot.MotorC.SendToNXT();
+        function distances_cm = ultraScanForPath(bot,numOfScans)
 
-            bot.MotorC.WaitFor();
-            
-            bot.MotorC.Stop();
+            Scans = bot.ScansForPath(-40, 90/numOfScans);
+            distances_cm = [ 
+                Scans(1, 2); 
+                Scans(2, 2); 
+                Scans(3, 2); 
+                Scans(5, 2);
+                Scans(4, 2) 
+                
+                 
+%                 Scans(6, 2);
+%                 Scans(7, 2);
+%                 Scans(8, 2);
+%                 Scans(9, 2)
+                ]; 
+                
         end
-
+        
         function distances_cm = Scans(bot, power_pct, angle_deg)
             count = 360/angle_deg;
             distances_cm = zeros(count, 2);
@@ -157,6 +159,52 @@ classdef Bot
                 end
             end
             rotateSensor(bot, power_pct, totAngle_deg); %reset the scanner
+        end
+        
+        function distanceFromObstacle = scanInFront_cm(bot)
+            distanceFromObstacle = GetUltrasonic(SENSOR_4);
+        end
+       
+        function rotateSensor(bot, power_pct, angle_deg)
+            bot.MotorC.ActionAtTachoLimit = 'Brake';
+            bot.MotorC.Power = power_pct;
+            bot.MotorC.SmoothStart = false;
+            bot.MotorC.TachoLimit = abs(angle_deg);
+                        
+            bot.MotorC.SendToNXT();
+
+            bot.MotorC.WaitFor();
+            
+            bot.MotorC.Stop();
+        end
+
+        function distances_cm = ScansForPath(bot, power_pct, angle_deg)
+            count = round(90/angle_deg);
+            distances_cm = zeros(count, 2);
+            
+            % initial position
+            totAngle_deg = 90;
+            
+            for i = 1:3
+                distance_cm = GetUltrasonic(SENSOR_4);
+                calibrated_sensed_distance = distance_cm + 2;            
+                distances_cm(i,:) =  calibrated_sensed_distance;
+                
+                if i < count
+                    rotateSensor(bot, -power_pct, angle_deg);
+                end
+            end
+            rotateSensor(bot, power_pct, totAngle_deg); %reset the scanner
+            for i = 4:5
+                distance_cm = GetUltrasonic(SENSOR_4);
+                calibrated_sensed_distance = distance_cm + 2;            
+                distances_cm(i,:) =  calibrated_sensed_distance;
+                
+                if i < count
+                    rotateSensor(bot, -power_pct, angle_deg);
+                end
+            end
+            rotateSensor(bot, -power_pct, angle_deg);
         end
         
     end
