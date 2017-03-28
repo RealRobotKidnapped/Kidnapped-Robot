@@ -61,7 +61,7 @@ withinBounds = ones(RI,1);
 
      for j = 1:6
 
-         if boundary(j,1) <= 10 && i ~= 1 && i ~= 2
+         if boundary(j,1) <= 15 && i ~= 1 && i ~= 2
 
              withinBounds(i,1) = 0;   
 
@@ -121,7 +121,7 @@ for i = 1:z
         %fprintf('scan: %.3f \n',sc);
         dist = sqrt((target(1)-stP(1))^2 + (target(2)-stP(2))^2);
         
-        numPoints = 25;
+        numPoints = 50;
         onLineDist = dist/numPoints;
         
         pointsOnLine(numPoints,1) = BotSim;
@@ -136,7 +136,7 @@ for i = 1:z
             pointsOnLine(k).setScanConfig(botSim.generateScanConfig(6));
             POLscan = pointsOnLine(k).ultraScan();
             for l = 1:6
-                if POLscan(l) < 20
+                if POLscan(l) < 10
                     POLresults(k) = 0;
                 end
             end
@@ -144,15 +144,15 @@ for i = 1:z
         Lia = ismember(0,POLresults);
         count = 0;
         for p = 1:numPoints
-            if POLresults == 0
+            if POLresults(p) == 0
                 count = count +1;
             end
         end
-        if sc > dist && Lia == 0 
+        if sc > dist && Lia == 0 &&(j ~= 2 || i ~= 1) 
             pairs(STindex,:) = [i j];
             STindex = STindex +1;
            
-        else if j == 2 && sc > dist && count <= 5
+        else if (j == 2 || i == 1) && sc > dist && count <= 10
              pairs(STindex,:) = [i j];
              STindex = STindex +1;
             end
@@ -221,19 +221,38 @@ for i = 2:tests
     
      %fprintf('turn: %.3f \n', turn);
      bot.turn(turn);
-    %************************************vishal*********************************
-    distanceToWall = ultraScanTest(map,target);
-    TempPoint = BotSim(modifiedmap);
-    TempPoint.setBotPos(botSim.getBotPos());
-    TempPoint.setBotAng(botSim.getBotAng());
+%     %************************************vishal*********************************
+    distanceToWall = bot.ultraScanForPath(5);
+    TempPoint = BotSim(modifiedMap);
+    TempPoint.setBotPos(cpath(i-1,:));
+    TempPoint.setBotAng(curAng);
     TempPoint.setScanConfig(botSim.generateScanConfig(1));
     tempDisToWall = TempPoint.ultraScan();
-    differences = distanceToWall - tempDisToWall;
+    differences = abs(distanceToWall - tempDisToWall);
     [minDiff, ind] = min(differences);
     
-    %************************************vishal*********************************
+    if ind == 1
+        disp('do nothing');
+    elseif ind == 2
+        bot.turn(-pi/16);
+    elseif ind == 3
+        bot.turn(-pi/8);
+    elseif ind == 4
+        bot.turn(pi/8);
+    elseif ind == 5
+        bot.turn(pi/16);    
+    end
+    
+%     
+      
+
+%     %************************************vishal*********************************
      disp('it hits here');
      distance = sqrt((nextPoint(1)-curPoint(1))^2 + (nextPoint(2)-curPoint(2))^2);
+     distanceStraight = bot.scanInFront_cm();
+     if(abs(distanceStraight-distance) > 5)
+         distance = distance * 0.90;
+     end
      %fprintf('distance: %.3f \n', distance);
      extrad = distance*(0.5/10);
      bot.move(distance);
