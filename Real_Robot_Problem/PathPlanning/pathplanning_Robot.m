@@ -250,9 +250,25 @@ for i = 2:tests
      disp('it hits here');
      distance = sqrt((nextPoint(1)-curPoint(1))^2 + (nextPoint(2)-curPoint(2))^2);
      distanceStraight = bot.scanInFront_cm();
-     if(abs(distanceStraight-distance) > 5)
+     
+     if(abs(distanceStraight-distance) > 10)
+        botScan = bot.ultraScan(9); % Scan again
+        [maxValue, indexofmax] = max(botScan);
+        
+        TurnAngleofBot =  indexofmax * 40;
+        TurnAngleofBot = mod(TurnAngleofBot, (2*pi));
+        if(turn > pi)
+            TurnAngleofBot = ((2 * pi) - turn) * -1;
+        end   
+        bot.turn(TurnAngleofBot);
+        
+        distanceStraight = bot.scanInFront_cm();
+        bot.move(distanceStraight * .80);
+     elseif(abs(distanceStraight-distance) > 5)
          distance = distance * 0.90;
      end
+     
+     
      %fprintf('distance: %.3f \n', distance);
      extrad = distance*(0.5/10);
      bot.move(distance);

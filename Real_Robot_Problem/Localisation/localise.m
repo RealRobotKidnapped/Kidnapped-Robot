@@ -287,14 +287,14 @@ while(n < maxNumOfIterations)
     end
 
     if((aflag == 1 && bflag == 2)) % if robot has wall in both left and right side and a wall ahead. In this case it moves back.
-            if((botScan(1,:) > 15))
+            if((botScan(1,:) > 16))
                 bot.move(8); % move back 10 cm
                 bot.turn(turnBot); % turn
                 for i =1:num %for all the particles.
                     particles(i).move(8);
                     particles(i).turn(turnBot); 
                 end
-            elseif((botScan(5,:) > 15) && (botScan(6,:) > 15))
+            elseif((botScan(5,:) > 20) && (botScan(6,:) > 20))
                 bot.move(-8); % move back 10 cm
                 bot.turn(-turnBot); % turn
                 for i =1:num %for all the particles.
